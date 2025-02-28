@@ -1,45 +1,22 @@
-import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from aift import setting
-from aift.nlp.longan import tokenizer
-from aift.multimodal import textqa
-from aift.nlp.translation import en2th
-from dotenv import load_dotenv
+from backend.api import auth, chat  # Adjusted import
+from backend.database.session import engine, Base
 
-# โหลดตัวแปรจาก .env
-load_dotenv()
 
-# ตั้งค่า API Key จาก .env
-setting.set_api_key(os.getenv("AIFORTHAI_API_KEY"))
+# Create tables if they don't exist
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# อนุญาตให้ React เรียก API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # หรือใส่ URL ที่อนุญาต เช่น ["http://localhost:3000"]
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-class TextRequest(BaseModel):
-    text: str
+app.include_router(auth.router)
+app.include_router(chat.router)  # Include chat router
 
-@app.post("/tokenize")
-async def tokenize_text(request: TextRequest):
-    tokens = tokenizer.tokenize(request.text)
-    return {"tokens": tokens}
-
-
-@app.post("/textqa")
-async def qa_text(request: TextRequest):
-    response = textqa.generate(request.text)
-    return {"answer": response["content"]}
-
-@app.post("/en2th")
-async def en2th_text(request: TextRequest):
-    response = en2th.translate(request.text)
-    return {"translate": response}

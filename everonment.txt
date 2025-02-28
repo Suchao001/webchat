@@ -1,0 +1,4 @@
+AIFORTHAI_API_KEY=v8JzzGJ7B41to0uLMNEuBikVTew3Dy5U
+DATABASE_URL=mysql+pymysql://root:root@localhost/webchat?charset=utf8mb4
+SECRET_KEY =your_secret_key
+ALGORITHM =HS256
